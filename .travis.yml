@@ -42,20 +42,9 @@ before_install:
   - echo "$GET_PIP_SHA  get-pip.py" | shasum -a 256 -c
   - sudo -H python get-pip.py
 
-  # Setup virtualenv
-  - sudo -H pip install -U virtualenv
-  - ls -l /usr/bin/python
-  - virtualenv --python=/usr/bin/python .venv
-  - virtualenv --version
-  - source .venv/bin/activate
-  - pip install -U pip
-  - pip install ansible==${ANSIBLE_VERSION}
-  - pip install ansible-lint
-  - pip install testinfra
-  - pip install yamllint
-
-  # For version_check.py
-  - pip install requests
+  # Setup pipenv
+  - sudo -H pip install -U pipenv
+  - pipenv install --dev
 
   # Unwind the developer environment
   - URL=https://raw.githubusercontent.com/Homebrew/install/master/uninstall
@@ -69,31 +58,31 @@ before_install:
 
 install:
   # Check versions
-  - python --version
-  - ansible --version
-  - ansible-lint --version
-  - py.test --version
-  - yamllint --version
+  - pipenv run python --version
+  - pipenv run ansible --version
+  - pipenv run ansible-lint --version
+  - pipenv run py.test --version
+  - pipenv run yamllint --version
 
 script:
   # Check available releases
-  - python tests/version_check.py
+  - pipenv run python tests/version_check.py
 
   # Lint all YAML files.
-  - yamllint .
+  - pipenv run yamllint .
 
   # Check the role/playbook's syntax.
-  - ansible-playbook tests/playbook.yml --syntax-check
+  - pipenv run ansible-playbook tests/playbook.yml --syntax-check
 
   # Lint the playbook.
-  - ansible-lint tests/playbook.yml
+  - pipenv run ansible-lint tests/playbook.yml
 
   # Test the playbook.
-  - ansible-playbook tests/playbook.yml
+  - pipenv run ansible-playbook tests/playbook.yml
 
   # Test the playbook's idempotence.
   - idempotence=$(mktemp /private/tmp/XXXXXXXXX)
-  - ansible-playbook tests/playbook.yml | tee -a ${idempotence}
+  - pipenv run ansible-playbook tests/playbook.yml | tee -a ${idempotence}
   - >-
       tail -25 ${idempotence} |
       grep -q 'changed=0.*failed=0' &&
@@ -101,7 +90,7 @@ script:
       (echo 'Idempotence test: fail' && exit 1)
 
   # Test host state
-  - py.test --connection=local --hosts=localhost --verbose tests
+  - pipenv run py.test --connection=local --hosts=localhost --verbose tests
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
