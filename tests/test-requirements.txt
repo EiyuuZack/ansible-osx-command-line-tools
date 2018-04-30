@@ -31,7 +31,7 @@ jinja2-time==0.2.0
 MarkupSafe==1.0
 marshmallow==2.15.1
 mccabe==0.6.1
-molecule==2.12.1
+molecule==2.13.0
 monotonic==1.4
 more-itertools==4.1.0
 packaging==17.1
